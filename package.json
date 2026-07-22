@@ -1,0 +1,12 @@
+{
+  "name": "chatapp",
+  "version": "1.0.0",
+  "description": "Real-time chat application with MERN stack",
+  "scripts": {
+    "build": "npm install --prefix BackEnd && npm install --prefix FrontEnd && npm run build --prefix FrontEnd",
+    "start": "npm start --prefix BackEnd"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
