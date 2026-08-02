@@ -37,7 +37,8 @@ export const RegisterUser= async (req,res)=>{
             username:newUser.username,
             email:newUser.email,
             profilePicture:newUser.profilePicture,
-            createdAt:newUser.createdAt }
+            createdAt:newUser.createdAt,
+            blockedUsers: newUser.blockedUsers}
         res.status(201).json({message:"New User created Successfully",user:userResponse});}
      catch(error){
         console.log("Error in registration: ",error.message);
@@ -62,7 +63,8 @@ export const LoginUser=async (req,res)=>{
         username:user.username,
         email:user.email,
         profilePicture:user.profilePicture,
-        createdAt:user.createdAt}
+        createdAt:user.createdAt,
+        blockedUsers: user.blockedUsers}
     res.status(200).json({
         message:"Logged In successfully",
         user:userResponse});}
@@ -182,7 +184,8 @@ export const updateEmail = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 profilePicture: user.profilePicture,
-                createdAt:user.createdAt
+                createdAt:user.createdAt,
+                blockedUsers: user.blockedUsers
             }
         });
     } catch (error) {
@@ -266,7 +269,8 @@ export const googleAuth=async(req,res)=>{
             username: currUser.username,
             email: currUser.email,
             profilePicture: currUser.profilePicture,
-            createdAt: currUser.createdAt
+            createdAt: currUser.createdAt,
+            blockedUsers:currUser.blockedUsers
         }
         return res.status(200).json({
             message: "Google Login successful",

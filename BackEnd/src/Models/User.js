@@ -31,7 +31,15 @@ const userSchema=new mongoose.Schema({
     isBot:{ // for AI chatbot
         type:Boolean,
         default:false
-    }},
+    },
+    blockedUsers: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: []
+        }
+    ],
+},
     {timestamps:true});
 
 const User= mongoose.model("User",userSchema);

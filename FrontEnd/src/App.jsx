@@ -8,6 +8,7 @@ import { useAuthStore } from "./Store/UseAuthStore.js";
 import { useChatStore } from "./Store/UseChatStore.js";
 import { useThemeStore } from "./Store/UseThemeStore.js";
 import { useEffect } from "react";
+import BlockedUsersPage from "./Pages/BlockedUsersPage.jsx";
 import LoadingCard from "./Card/LoadingCard.jsx";
 
 
@@ -44,6 +45,8 @@ const App = () => {
           <Route path="*" element={
           <div className="flex justify-center items-center h-screen">
           <h1>404 - Page Not Found 😢</h1></div>}/>
+          <Route path="/blocked-users" element={authUser ? <BlockedUsersPage /> : <Navigate to="/login" />} />
+
       </Routes>
     </div>
   )

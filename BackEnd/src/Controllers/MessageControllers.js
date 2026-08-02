@@ -12,7 +12,8 @@ export const knownContacts=async (req,res)=>{
         const messages=await Message.find({
             $or:[
                 {senderID:currentUser},
-                {receiverID:currentUser}]
+                {receiverID:currentUser}],
+            hiddenFrom:{$ne:currentUser}
         }).sort({createdAt:-1});// last message order
         //2. Fetch AI chatbot
        const botId=process.env.CHATBOT_ID;
@@ -38,6 +39,12 @@ export const knownContacts=async (req,res)=>{
                         unreadMessages.set(sender,1);}}}
             contactIds.add(contactId);});
         contactIds.add(currentUser.toString());
+        
+        // Also fetch the profiles of all users we have blocked!
+        const currentUserObj = await User.findById(currentUser);
+        if (currentUserObj && currentUserObj.blockedUsers) {
+            currentUserObj.blockedUsers.forEach(id => contactIds.add(id.toString()));
+        }
         if(botId){
             contactIds.add(botId.toString());}
         else{
@@ -53,6 +60,10 @@ export const knownContacts=async (req,res)=>{
         });
         const detailsWithTime=details.map((user)=>{
             const userObj=user.toObject();
+            // Removing your friends profile pic if he blocked you
+            if(userObj.blockedUsers && userObj.blockedUsers.some(id=>
+                id.toString()===currentUser.toString())){
+                    userObj.profilePicture="";}
             return {...userObj,
                 lastMessageTime:lastMessageTimeStamp.has(user._id.toString()) ?
                 lastMessageTimeStamp.get(user._id.toString()):null,
@@ -74,7 +85,8 @@ export const getMessages=async(req,res)=>{
     const messages=await Message.find({
         $or:[
             {senderID:userID,receiverID:id},
-            {senderID:id,receiverID:userID}]}).sort({createdAt:1});
+            {senderID:id,receiverID:userID}],
+            hiddenFrom:{$ne:userID}}).sort({createdAt:1});
     res.status(200).json({message:"Message Fetching was Successful",msg:messages});
     }
     catch(error){
@@ -104,17 +116,22 @@ export const sendMessages=async(req,res)=>{
         //Upload image in Cloudinary and save the message
         if(!text&&!image){
             return res.status(400).json({message:"Invalid message should contain some text or image"});}
+        const receiverUser=await User.findById(receiver);
+        const isBlockedByReceiver= receiverUser.blockedUsers.some(
+            (id)=>id.toString()===sender.toString()
+        );
         const imageUpload=image?await cloudinary.uploader.upload(image):null;
         const newMessage=new Message({
             senderID:sender,
             receiverID:receiver,
             text:text,
-            ...(imageUpload&&{image:imageUpload.secure_url})});
+            ...(imageUpload&&{image:imageUpload.secure_url}),
+            hiddenFrom:isBlockedByReceiver?[receiver]:[]});
         await newMessage.save();
+        if(!isBlockedByReceiver){
         const receiverSocketID=getReceiverSocketID(receiver);
         if(receiverSocketID){
-            io.to(receiverSocketID).emit("newMessage",newMessage);
-        }
+            io.to(receiverSocketID).emit("newMessage",newMessage);}}
         if(receiver===botId){
             try{
                 const previousMessages=await Message.find({
@@ -194,7 +211,13 @@ export const searchUsers=async(req,res)=>{
                 { username: { $regex: query, $options: "i" } },
                 { email: { $regex: query, $options: "i" } }
             ],});
-         res.status(200).json({ DisplayContacts: users });
+        const BlockProfilePicRemoveUsers=users.map(user=>{
+            const userObj=user.toObject();
+            if(userObj.blockedUsers&&userObj.blockedUsers.some(id=>
+                id.toString()===currentUserId.toString())){
+                    userObj.profilePicture="";}
+                return userObj;})
+         res.status(200).json({ DisplayContacts: BlockProfilePicRemoveUsers });
     }
     catch(error){
         console.log("Error in searchUsers Controller");
@@ -217,4 +240,36 @@ export const readMessages=async(req,res)=>{
         console.log("Error in readMessages controller");
         console.log(error.message);
     }   
+};
+
+export const blockUser=async (req,res)=>{
+    try{
+        const userBlocked=req.params.id;
+        const userWhoIsBlocking=req.user._id;
+        const user=await User.findByIdAndUpdate(
+            userWhoIsBlocking,
+            {$addToSet:{blockedUsers:userBlocked}},
+            {new:true});
+        res.status(200).json({message:"User blocked Successfully", blockedUsers:user.blockedUsers});}
+    catch(error){
+         console.error("Error in blockUser controller:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const unblockUser=async (req,res)=>{
+    try{
+        const userUnblocked=req.params.id;
+        const userWhoIsUnblocking=req.user._id;
+        const user=await User.findByIdAndUpdate(
+            userWhoIsUnblocking,
+            {$pull:{blockedUsers:userUnblocked}},
+            {new: true}
+        );
+        return res.status(200).json({message:"User unblocked successfully",blockedUsers:user.blockedUsers})
+    }
+    catch(error){
+        console.error("Error in unblockUser controller:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
 };

@@ -185,5 +185,33 @@ export const useAuthStore=create((set,get)=>({
     disconnectSocket:()=>{
         if(get().socket?.connected)
             get().socket.disconnect();
-    }       
+    },
+    blockUser:async(userId)=>{
+        try{
+            const res=await axiosInstance.post(`msg/block/${userId}`);
+            set((state)=>({
+                authUser:{
+                    ...state.authUser,
+                    blockedUsers:res.data.blockedUsers
+                }
+            }));
+        }
+        catch(error){
+            toast.error(error.response?.data?.message || "Failed to block user");
+        }
+    }, 
+    unblockUser:async(userId)=>{
+        try{
+            const res=await axiosInstance.post(`/msg/unblock/${userId}`);
+            set((state)=>({
+                authUser:{
+                    ...state.authUser,
+                    blockedUsers:res.data.blockedUsers
+                }
+            }))
+        }
+        catch(error){
+            toast.error(error.response?.data?.message || "Failed to unblock user");
+        }
+    }      
 }));

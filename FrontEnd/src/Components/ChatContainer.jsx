@@ -10,6 +10,7 @@ const ChatContainer = () => {
   const { messages, getMessages, selectedUser, isMessagesLoading } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
+  const isBlocked=authUser?.blockedUsers?.includes(selectedUser?._id);
   useEffect(() => {
     getMessages(selectedUser._id);
   }, [selectedUser._id, getMessages]);
@@ -128,7 +129,13 @@ const ChatContainer = () => {
         <div ref={messageEndRef}></div>
       </div>
 
-      <MessageInput />
+            {isBlocked ? (
+        <div className="p-4 text-center text-sm font-medium text-base-content/50 bg-base-200/50 border-t border-white/10">
+          You blocked this contact. Tap 'Unblock' to send a message.
+        </div>
+      ) : (
+        <MessageInput />
+      )}
     </div>
   );
 };

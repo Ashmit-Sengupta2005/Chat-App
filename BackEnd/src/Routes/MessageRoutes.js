@@ -1,10 +1,12 @@
 import express from "express";
 import { protectRoutes } from "../MiddleWare/ProtectRoutes.js";
-import { knownContacts, getMessages,sendMessages,searchUsers,readMessages} from "../Controllers/MessageControllers.js";
+import { knownContacts, getMessages,sendMessages,searchUsers,readMessages, blockUser,unblockUser} from "../Controllers/MessageControllers.js";
 const router=express.Router();
 router.get("/users",protectRoutes,knownContacts);
 router.get("/getMessages/:id",protectRoutes,getMessages);
 router.get("/search", protectRoutes, searchUsers);
 router.post("/send/:id",protectRoutes,sendMessages);
+router.post("/block/:id",protectRoutes,blockUser);
+router.post("/unblock/:id",protectRoutes,unblockUser);
 router.put("/read/:id",protectRoutes,readMessages);
 export default router;

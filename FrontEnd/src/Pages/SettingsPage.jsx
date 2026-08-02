@@ -462,38 +462,29 @@ const SettingsPage = () => {
               </div>
             </section>
 
-            {/* 3. BLOCKED USERS PANEL */}
+            {/* 3. BLOCKED USERS PANEL (WhatsApp Style Entry Point) */}
             <section id="blocked-users" className="scroll-mt-6">
-              <div className="bg-base-100/40 border border-white/5 rounded-2xl p-6 space-y-6 shadow-lg">
-                <div className="flex items-center gap-2.5 pb-3 border-b border-white/5">
-                  <Ban className="w-5 h-5 text-amber-400" />
-                  <h3 className="text-lg font-bold text-white">Blocked Users</h3>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex flex-col p-4 rounded-xl bg-slate-900/20 border border-white/5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white">Blocked Contacts</span>
-                        <span className="text-xs text-base-content/50">Blocked contacts cannot message you or see your online status.</span>
+              <Link to="/blocked-users" className="block">
+                <div className="bg-base-100/40 border border-white/5 rounded-2xl p-4 shadow-lg hover:bg-base-100/60 transition-colors cursor-pointer group">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center group-hover:bg-error/20 transition-colors">
+                        <Ban className="w-6 h-6 text-error" />
                       </div>
-                      <span className="badge badge-error badge-sm font-semibold">0 Blocked</span>
+                      <div className="flex flex-col">
+                        <span className="text-base font-bold text-white group-hover:text-error transition-colors">Blocked Contacts</span>
+                        <span className="text-sm text-base-content/50">Manage your blocked contacts list</span>
+                      </div>
                     </div>
-                    
-                    {/* Block Action Input */}
-                    <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        placeholder="Search contact to block..." 
-                        className="input input-bordered input-xs flex-1 bg-slate-900/40 border-white/10 text-white text-xs h-8 px-2.5 focus:border-cyan-500/40 focus:outline-none" 
-                      />
-                      <button type="button" className="btn btn-error btn-xs h-8 px-4 font-bold text-white">
-                        Block User
-                      </button>
+                    <div className="flex items-center gap-3">
+                      <span className="badge badge-error badge-sm font-semibold px-2 py-3 text-xs">
+                        {authUser?.blockedUsers?.length || 0}
+                      </span>
+                      <ChevronRight className="w-6 h-6 text-base-content/50 group-hover:text-white transition-colors" />
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             </section>
 
             {/* 4. DELETE ACCOUNT PANEL */}
