@@ -76,6 +76,22 @@ export const useAuthStore=create((set,get)=>({
             set({isSigningUp:false});
         }
     },
+    googleAuth: async (token) => {
+        set({ isLoggingIn: true });
+        try {
+            const res = await axiosInstance.post("/auth/google", { token });
+            const user = res.data.user;
+            set({ authUser: user });
+            get().connectSocket();
+            // toast.success("Logged in with Google successfully");
+        } catch (error) {
+            const errorMessage = error.response?.data?.message || "Google Login failed";
+            toast.error(errorMessage);
+            set({ authUser: null });
+        } finally {
+            set({ isLoggingIn: false });
+        }
+    },
     updateProfilePic:async(pic)=>{
         set({isUpdatingProfilePic:true});
         try{

@@ -4,6 +4,8 @@ import { generateToken } from "../Config/Utils.js";
 import validator from "validator";
 import cloudinary from "../Config/Cloudinary.js";
 import dotenv from "dotenv";
+import {OAuth2Client} from 'google-auth-library';
+import axios from "axios";
 dotenv.config();
 export const RegisterUser= async (req,res)=>{
     try{
@@ -245,4 +247,34 @@ export const deleteAccount=async(req,res)=>{
     catch(error){
         console.log("Error in deleteAccount controller:", error.message);
         res.status(500).json({ message: "Failed to delete account. Internal Server Error" });}
+};
+
+export const googleAuth=async(req,res)=>{
+    try{
+        const {token}=req.body;
+        const googleResponse = await axios.get("https://www.googleapis.com/oauth2/v3/userinfo", {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const { email } = (googleResponse.data);
+        const currUser = await User.findOne({ email: email});
+        if(!currUser){
+            return res.status(404).json({message:"User not found.Try registering first"});
+        }
+        generateToken(currUser._id,res);
+        const userResponse={
+             _id: currUser._id,
+            username: currUser.username,
+            email: currUser.email,
+            profilePicture: currUser.profilePicture,
+            createdAt: currUser.createdAt
+        }
+        return res.status(200).json({
+            message: "Google Login successful",
+            user: userResponse
+        });
+        }
+    catch(error){
+        console.error("Error in Google Auth:", error);
+        res.status(500).json({ message: "Internal server error during Google Authentication" });
+    }
 };
